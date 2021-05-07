@@ -235,6 +235,146 @@ int insert(Node* head, int key)
 
 int deleteNode(Node* head, int key)
 {
+	Node* delete=searchIterative(head,key);	//삭제하려는 값의 위치 확인
+	
+/*i 삭제하려는 값이 tree에 없을 때*/
+	if(!delete){	
+		printf("key is not in tree\n");
+		return 0;
+	}
+	Node* p=head->left;		
+	
+	// /*tree에 노드가 하나밖에 없다면 헤더노드의 left를 NULL로 하고 삭제할 노드의 메모리 해제 해준다.*/
+	// if(p==delete){head->left=NULL; free(delete); return 0;}	
+
+/*ii 삭제하고자 하는 노드가 단말노드 일 때*/
+	if(delete->left == NULL&&delete->right==NULL){//leaf 노드 일 경우
+		
+		while(1){
+		/*부모노드의 link를 NULL로 해주고, 삭제할 노드의 메모리를 해제한다.*/
+		if(p->left==delete){	
+			p->left=NULL; free(delete); return 0;}
+		if(p->right==delete){
+			p->right=NULL; free(delete); return 0;}
+
+		if(key<p->key)	//key 값이 원소의 값보다 작으면
+			p=p->left;	//왼쪽 서브트리로 이동
+		else
+			p=p->right;	//key가 원소의 값보다 크면 오른쪽 서브트리로 이동
+		}
+	}
+
+/*iii 삭제하고자 하는 노드가 하나의 자식만을 가질 때*/
+	if(delete->left==NULL){	//오른쪽 자식노드만을 가질 때
+		while(1){	//삭제할 때 까지 반복
+			if(p->left==delete){	//p->left 에 삭제할 항목이 있다면
+				p->left=delete->right;	//p 는 삭제할 항목의 right를 자식노드로 가지게 된다.
+				free(delete);
+				return 0;
+			}
+			if(p->right==delete){	//p->right에 삭제할 항목이 있다면
+				p->right=delete->right;	//p는 삭제할 항목의 right를 자식노드로 가지게 된다.
+				free(delete);
+				return 0;
+			}/*트리 이동*/
+			if(key<p->key)	p=p->left;
+			else	p=p->right;
+		}
+	}
+	/*왼쪽 자식노드만을 가질 때. 앞선 오른쪽 자식노드만을 가질 때와 삭제할 항목의 left를 자식노드로
+	가지는 것 외에 동일하다.*/
+	if(delete->right==NULL){	//왼쪽 자식노드만을 가질 때
+		while(1){
+			if(p->left==delete){
+				p->left=delete->left;
+				free(delete);
+				return 0;
+			}
+			if(p->right==delete){
+				p->right=delete->left;
+				free(delete);
+				return 0;
+			}
+			if(key<p->key)	p=p->left;
+			else	p=p->right;
+		}
+	}
+	
+/*iv 삭제하고자 하는 노드가 두 개의 자식을 가질 때 (오른쪽 서브트리에서 가장 작은 값으로 대체)*/
+	Node* ptr=NULL;	//삭제될 노드를 대체할 노드를 가리킬 포인터
+
+	while(1){
+		if(p->left==delete){//p -> left 가 삭제할 항목인 경우
+			
+			ptr=delete->right; //삭제할 항목의 오른쪽 서브트리로 이동
+			
+			if(ptr->left==NULL){	//삭제할 항목의 오른쪽 노드가 가장 작은 값이라면
+				
+				ptr->left=delete->left;
+				p->left=ptr;
+				free(delete);
+				return 0;
+			}
+
+			ptr=ptr->left;	
+			delete=delete->right;	//ptr의 이전 노드에 위치
+			
+			for(;;){	//삭제할 항목의 오른쪽 서브트리 중 가장 작은 값 찾기
+				if(ptr->left==NULL) break;
+
+				ptr=ptr->left;
+				delete=delete->left;
+			}
+			/*ptr: 가장 작은 노드 (삭제할 항목의 대체 노드)
+			, delete: 가장 작은 노드의 부모 노드, p: 삭제할 항목의 부모노드*/
+			ptr->left=p->left->left;	//ptr을 삭제될 공간의 left 노드와 연결
+			delete->left=ptr->right;	//ptr의 부모노드의 left 를 ptr->right 와 연결
+			ptr->right=p->left->right;	//ptr을 삭제될 공간의 right 노드와 연결
+			
+			free(p->left);		// 노드 삭제
+			
+			p->left=ptr;				//삭제된 공간의 부모노드와 ptr 연결
+			return 0;
+		}
+		if(p->right==delete){//p -> right 가 삭제할 항목인 경우
+			
+			ptr=delete->right; //삭제할 항목의 오른쪽 서브트리로 이동
+			
+			if(ptr->left==NULL){	//삭제할 항목의 오른쪽 노드가 가장 작은 값이라면
+				
+				ptr->left=delete->left;
+				p->right=ptr;
+				free(delete);
+				return 0;
+			}
+
+			ptr=ptr->left;	
+			delete=delete->right;	//ptr의 이전 노드에 위치
+			
+			for(;;){	//삭제할 항목의 오른쪽 서브트리 중 가장 작은 값 찾기
+				if(ptr->left==NULL) break;
+
+				ptr=ptr->left;
+				delete=delete->left;
+			}
+
+			/*ptr: 가장 작은 노드 (삭제할 항목의 대체 노드)
+			, delete: 가장 작은 노드의 부모 노드, p: 삭제할 항목의 부모노드*/
+			ptr->left=p->right->left;	//ptr을 삭제될 공간의 left 노드와 연결
+			delete->left=ptr->right;	//ptr의 부모노드의 left 를 ptr->right 와 연결
+			ptr->right=p->right->right;	//ptr을 삭제될 공간의 right 노드와 연결
+			
+			free(p->right);		// 노드 삭제
+			
+			p->right=ptr;				//삭제된 공간의 부모노드와 ptr 연결
+			return 0;
+		}
+		/*삭제할 노드를 찾아 이동*/
+		if(key<p->key)	p=p->left;
+		else	p=p->right;
+	}
+
+
 }
 
 
