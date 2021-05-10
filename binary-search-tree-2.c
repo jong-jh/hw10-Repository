@@ -49,7 +49,7 @@ int freeBST(Node* head); /* free all memories allocated to the tree */
 
 /* you may add your own defined functions if necessary */
 
-Node* searchIterative(Node* head, int key);
+Node* searchIterative(Node* head, int key);		//해당되는 key를 가진 노드의 주소를 반환하는 함수
 void printStack();
 
 
@@ -250,6 +250,9 @@ int deleteNode(Node* head, int key)
 /*ii 삭제하고자 하는 노드가 단말노드 일 때*/
 	if(delete->left == NULL&&delete->right==NULL){//leaf 노드 일 경우
 		
+		/*tree에 노드가 하나밖에 없다면 헤더노드의 left를 NULL로 하고 삭제할 노드의 메모리 해제 해준다.*/
+		if(p==delete){head->left=NULL; free(delete); return 0;}	
+		
 		while(1){
 		/*부모노드의 link를 NULL로 해주고, 삭제할 노드의 메모리를 해제한다.*/
 		if(p->left==delete){	
@@ -266,6 +269,8 @@ int deleteNode(Node* head, int key)
 
 /*iii 삭제하고자 하는 노드가 하나의 자식만을 가질 때*/
 	if(delete->left==NULL){	//오른쪽 자식노드만을 가질 때
+		if(p==delete){head->left=delete->right; free(delete); return 0;}//첫 번째 노드가 삭제할 대상일 때 헤더노드가 삭제할 노드의 자식노드를 가리킨다.
+
 		while(1){	//삭제할 때 까지 반복
 			if(p->left==delete){	//p->left 에 삭제할 항목이 있다면
 				p->left=delete->right;	//p 는 삭제할 항목의 right를 자식노드로 가지게 된다.
@@ -284,6 +289,8 @@ int deleteNode(Node* head, int key)
 	/*왼쪽 자식노드만을 가질 때. 앞선 오른쪽 자식노드만을 가질 때와 삭제할 항목의 left를 자식노드로
 	가지는 것 외에 동일하다.*/
 	if(delete->right==NULL){	//왼쪽 자식노드만을 가질 때
+		if(p==delete){head->left=delete->left; free(delete); return 0;}	//첫 번째 노드가 삭제할 대상일 때 헤더노드가 삭제할 노드의 자식노드를 가리킨다.
+
 		while(1){
 			if(p->left==delete){
 				p->left=delete->left;
@@ -302,8 +309,9 @@ int deleteNode(Node* head, int key)
 	
 /*iv 삭제하고자 하는 노드가 두 개의 자식을 가질 때 (오른쪽 서브트리에서 가장 작은 값으로 대체)*/
 	Node* ptr=NULL;	//삭제될 노드를 대체할 노드를 가리킬 포인터
-
+	p=head;
 	while(1){
+		
 		if(p->left==delete){//p -> left 가 삭제할 항목인 경우
 			
 			ptr=delete->right; //삭제할 항목의 오른쪽 서브트리로 이동
@@ -369,8 +377,10 @@ int deleteNode(Node* head, int key)
 			p->right=ptr;				//삭제된 공간의 부모노드와 ptr 연결
 			return 0;
 		}
+
 		/*삭제할 노드를 찾아 이동*/
-		if(key<p->key)	p=p->left;
+		if(p->key==-9999) p=p->left;	//p의 위치가 헤더노드일 경우 다음 노드인 p->left로 이동
+		else if(key<p->key)	p=p->left;
 		else	p=p->right;
 	}
 
@@ -406,29 +416,29 @@ int freeBST(Node* head)
 
 
 
-Node* pop()
+Node* pop()	//stack pop
 {
-	if(top==-1)	return NULL;
-	else return stack[top--]; 
+	if(top==-1)	return NULL;	//stack 이 비어있다면 NULL 값 return 
+	else return stack[top--]; 	//stack 의 value를 리턴하고 top-=1
 }
 
-void push(Node* aNode)
-{	if(top==MAX_STACK_SIZE-1) printf("stack is full\n");
-	else stack[++top]=aNode;
+void push(Node* aNode)	//stack push 
+{	if(top==MAX_STACK_SIZE-1) printf("stack is full\n");	//stack이 꽉 차 있다면 다음을 출력
+	else stack[++top]=aNode;	//stack의 top을 +1 하고,  Node의 주소를 저장한다.
 }
 
 
 
-Node* deQueue()
+Node* deQueue()	//deQueue
 {
-	if(front==rear)	return 0;
-	else return queue[++front];
+	if(front==rear)	return 0;	//Queue가 비어있다면 return 0
+	else return queue[++front];	//front+=1, front가 가리키는 값 return 
 }
 
-void enQueue(Node* aNode)
+void enQueue(Node* aNode)	//enQueue
 {
-	if(rear==MAX_QUEUE_SIZE-1)	printf("queue is full\n");
-	else queue[++rear]=aNode;
+	if(rear==MAX_QUEUE_SIZE-1)	printf("queue is full\n");	//Queue가 꽉 차있다면 다음을 출력
+	else queue[++rear]=aNode;	// rear+=1, aNode의 주소를 Queue에 저장
 }
 
 void printStack(){
